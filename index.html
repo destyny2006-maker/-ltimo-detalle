@@ -15,7 +15,7 @@ body {
     margin: 0;
     min-height: 100vh;
     overflow: hidden;
-    background: radial-gradient(ellipse at bottom, #14213d 0%, #080d1b 55%, #02040b 100%);
+    background: radial-gradient(ellipse at bottom, #172747 0%, #080e20 55%, #02040b 100%);
     color: white;
     font-family: Georgia, serif;
 }
@@ -49,15 +49,19 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 25px 17px;
+    padding: 20px 15px;
     text-align: center;
+}
+
+#intro {
+    animation: appear 2s ease;
 }
 
 h1 {
     color: #fff4d6;
     font-size: clamp(27px, 7vw, 40px);
     font-weight: normal;
-    text-shadow: 0 0 15px #fff, 0 0 35px #b9d8ff;
+    text-shadow: 0 0 15px white, 0 0 35px #b9d8ff;
     margin-bottom: 12px;
 }
 
@@ -65,61 +69,65 @@ h1 {
     color: #d9e5ff;
     font-size: 16px;
     line-height: 1.7;
-    max-width: 330px;
+    max-width: 340px;
 }
 
 button {
     border: 1px solid #e7d7a0;
     border-radius: 30px;
-    padding: 13px 24px;
+    padding: 14px 25px;
     background: linear-gradient(135deg, #263b61, #111a30);
     color: #fff5d9;
     font-family: Georgia, serif;
     font-size: 16px;
     cursor: pointer;
     box-shadow: 0 0 18px #a9c8ff44;
-    transition: .3s;
 }
 
 button:active {
     transform: scale(.96);
 }
 
+button:disabled {
+    opacity: .6;
+}
+
 #startButton {
     margin-top: 25px;
 }
 
-#messageCanvas {
+#messageArea {
+    display: none;
     width: 100%;
-    max-width: 650px;
-    height: 270px;
-    display: block;
-    overflow: visible;
+    max-width: 700px;
+    animation: appear 1.5s ease;
 }
 
-#messageArea {
+#messageCanvas {
+    display: block;
     width: 100%;
-    display: none;
+    height: 300px;
+    overflow: visible;
 }
 
 #status {
     color: #dce8ff;
     font-size: 14px;
     letter-spacing: 1px;
-    min-height: 24px;
+    min-height: 25px;
     margin-top: 5px;
 }
 
 #voiceArea {
     display: none;
-    margin-top: 20px;
+    margin-top: 15px;
     animation: appear 2s ease;
 }
 
 #voiceArea p {
     color: #fff1d2;
     font-size: 20px;
-    text-shadow: 0 0 12px #fff;
+    text-shadow: 0 0 12px white;
     line-height: 1.5;
 }
 
@@ -132,7 +140,7 @@ button:active {
 
 #finalMessage {
     display: none;
-    margin-top: 20px;
+    margin-top: 12px;
     color: #fff2d9;
     font-size: clamp(21px, 5vw, 28px);
     line-height: 1.6;
@@ -147,17 +155,24 @@ button:active {
 }
 
 @keyframes appear {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-height: 650px) {
     #messageCanvas {
-        height: 210px;
+        height: 240px;
     }
+
     .container {
-        padding-top: 12px;
-        padding-bottom: 12px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 }
 </style>
@@ -172,22 +187,39 @@ button:active {
 
     <section id="intro">
         <h1>Un mensaje entre las estrellas</h1>
+
         <p class="subtitle">
             Antes de que termine tu día, quiero regalarte
             algo más... ❤️
         </p>
-        <button id="startButton">Mirar las estrellas ✨</button>
-        <p class="small">Una última sorpresa para ti, mi niña hermosa.</p>
+
+        <button id="startButton">
+            Mirar las estrellas ✨
+        </button>
+
+        <p class="small">
+            Una última sorpresa para ti, mi niña hermosa.
+        </p>
     </section>
 
     <section id="messageArea">
+
         <canvas id="messageCanvas"></canvas>
-        <div id="status">El cielo tiene algo que decirte...</div>
+
+        <div id="status">
+            El cielo tiene algo que decirte...
+        </div>
 
         <div id="voiceArea">
             <p>Hay algo más que quiero que escuches...</p>
-            <button id="voiceButton">❤️ Escuchar mi voz ❤️</button>
-            <p class="small">Un último regalo antes de que termine tu día.</p>
+
+            <button id="voiceButton">
+                ❤️ Escuchar mi voz ❤️
+            </button>
+
+            <p class="small">
+                Un último regalo antes de que termine tu día.
+            </p>
         </div>
 
         <div id="finalMessage">
@@ -196,6 +228,7 @@ button:active {
             sería a tu lado.<br>
             <span style="font-size:32px;">Te amo ✨</span>
         </div>
+
     </section>
 
 </div>
@@ -209,7 +242,10 @@ button:active {
 </audio>
 
 <script>
-/* ESTRELLAS DEL FONDO */
+
+/* =====================================
+   ESTRELLAS DEL CIELO
+===================================== */
 
 const sky = document.getElementById("sky");
 const skyCtx = sky.getContext("2d");
@@ -217,19 +253,22 @@ const skyCtx = sky.getContext("2d");
 let backgroundStars = [];
 
 function resizeSky() {
-    sky.width = window.innerWidth * devicePixelRatio;
-    sky.height = window.innerHeight * devicePixelRatio;
-    skyCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    const ratio = window.devicePixelRatio || 1;
+
+    sky.width = window.innerWidth * ratio;
+    sky.height = window.innerHeight * ratio;
+
+    skyCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
     backgroundStars = [];
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 160; i++) {
         backgroundStars.push({
             x: Math.random() * window.innerWidth,
             y: Math.random() * window.innerHeight,
-            size: Math.random() * 1.7 + .3,
+            size: Math.random() * 1.5 + .3,
             alpha: Math.random(),
-            speed: Math.random() * .02 + .005
+            speed: Math.random() * .015 + .004
         });
     }
 }
@@ -249,7 +288,10 @@ function drawSky() {
 
         skyCtx.beginPath();
         skyCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        skyCtx.fillStyle = `rgba(255,255,255,${star.alpha})`;
+
+        skyCtx.fillStyle =
+            `rgba(255,255,255,${star.alpha})`;
+
         skyCtx.shadowBlur = 8;
         skyCtx.shadowColor = "white";
         skyCtx.fill();
@@ -260,15 +302,31 @@ function drawSky() {
 
 drawSky();
 
-/* ANIMACIÓN DE LETRAS FORMADAS POR ESTRELLAS */
+
+/* =====================================
+   CANVAS DE LAS LETRAS
+===================================== */
 
 const canvas = document.getElementById("messageCanvas");
 const ctx = canvas.getContext("2d");
 
 let particles = [];
 let animationFrame;
-let currentLine = 0;
-let writing = false;
+
+function resizeMessageCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+
+/* =====================================
+   FRASES QUE ESCRIBIRÁN LAS ESTRELLAS
+===================================== */
 
 const messages = [
     "De todas las estrellas del cielo,",
@@ -286,125 +344,212 @@ const messages = [
     "Feliz cumpleaños, mi niña hermosa ❤️"
 ];
 
-function resizeMessageCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
+let currentLine = 0;
 
-    canvas.width = rect.width * ratio;
-    canvas.height = rect.height * ratio;
 
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-}
+/* =====================================
+   CONVERTIR TEXTO EN PUNTOS DE ESTRELLAS
+===================================== */
 
 function createTargetPoints(text) {
+
     const rect = canvas.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+
+    const width = Math.floor(rect.width);
+    const height = Math.floor(rect.height);
 
     const off = document.createElement("canvas");
-    off.width = Math.floor(width);
-    off.height = Math.floor(height);
+
+    off.width = width;
+    off.height = height;
 
     const octx = off.getContext("2d");
 
-    let fontSize = Math.min(27, width / 12);
+    const words = text.split(" ");
+    const lines = [];
 
+    let fontSize = Math.min(29, width / 11);
+    let line = "";
+
+    octx.font = `bold ${fontSize}px Georgia`;
+
+    // Separar palabras en líneas legibles.
+    words.forEach(word => {
+
+        const test = line ? line + " " + word : word;
+
+        if (octx.measureText(test).width > width - 30 && line) {
+            lines.push(line);
+            line = word;
+        } else {
+            line = test;
+        }
+
+    });
+
+    if (line) {
+        lines.push(line);
+    }
+
+    // Ajustar letras según el número de líneas.
+    fontSize = Math.min(
+        29,
+        width / 11,
+        100 / lines.length
+    );
+
+    octx.font = `bold ${fontSize}px Georgia`;
     octx.textAlign = "center";
     octx.textBaseline = "middle";
-
-    function setFont(size) {
-        octx.font = `bold ${size}px Georgia`;
-    }
-
-    setFont(fontSize);
-
-    while (octx.measureText(text).width > width - 24 && fontSize > 13) {
-        fontSize--;
-        setFont(fontSize);
-    }
-
     octx.fillStyle = "white";
-    octx.fillText(text, width / 2, height / 2, width - 20);
 
-    const data = octx.getImageData(0, 0, off.width, off.height).data;
+    const lineHeight = fontSize * 1.45;
+
+    const startY =
+        height / 2 - ((lines.length - 1) * lineHeight) / 2;
+
+    lines.forEach((item, i) => {
+
+        octx.fillText(
+            item,
+            width / 2,
+            startY + i * lineHeight,
+            width - 25
+        );
+
+    });
+
+    const data = octx.getImageData(
+        0, 0, width, height
+    ).data;
+
     const targets = [];
 
-    for (let y = 0; y < off.height; y += 3) {
-        for (let x = 0; x < off.width; x += 3) {
-            const index = (y * off.width + x) * 4 + 3;
+    // Muestreo de los caracteres.
+    for (let y = 0; y < height; y += 2) {
+
+        for (let x = 0; x < width; x += 2) {
+
+            const index = (y * width + x) * 4 + 3;
 
             if (data[index] > 100) {
-                targets.push({
-                    x: x,
-                    y: y
-                });
+                targets.push({ x, y });
             }
+
         }
+
     }
 
     return targets;
 }
 
+
+/* =====================================
+   ANIMACIÓN DE ESCRITURA
+===================================== */
+
 function writeText(text, callback) {
-    writing = true;
+
     resizeMessageCanvas();
 
     const targets = createTargetPoints(text);
 
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
     particles = targets.map(target => ({
-        x: Math.random() * canvas.clientWidth,
-        y: Math.random() * canvas.clientHeight,
+
+        x: Math.random() * width,
+        y: Math.random() * height,
+
         tx: target.x,
         ty: target.y,
-        size: Math.random() * 1.2 + 1,
-        alpha: Math.random() * .5 + .5,
+
+        size: Math.random() * .8 + 1.5,
+        alpha: Math.random() * .4 + .6,
         phase: Math.random() * Math.PI * 2
+
     }));
 
     let start = null;
-    const duration = 2400;
+
+    const duration = 2800;
+
+    cancelAnimationFrame(animationFrame);
 
     function animate(time) {
-        if (!start) start = time;
 
-        const progress = Math.min((time - start) / duration, 1);
+        if (!start) {
+            start = time;
+        }
 
-        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        const progress = Math.min(
+            (time - start) / duration,
+            1
+        );
+
+        ctx.clearRect(0, 0, width, height);
 
         particles.forEach(p => {
+
             const ease = 1 - Math.pow(1 - progress, 3);
 
             const x = p.x + (p.tx - p.x) * ease;
             const y = p.y + (p.ty - p.y) * ease;
 
-            const twinkle = .65 + Math.sin(time * .004 + p.phase) * .35;
+            const twinkle =
+                .7 + Math.sin(time * .004 + p.phase) * .3;
 
             ctx.beginPath();
-            ctx.arc(x, y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${twinkle * p.alpha})`;
-            ctx.shadowBlur = 8 + twinkle * 8;
+
+            ctx.arc(
+                x,
+                y,
+                p.size,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                `rgba(255,255,255,${twinkle * p.alpha})`;
+
+            ctx.shadowBlur = 10 + twinkle * 8;
             ctx.shadowColor = "#ffffff";
+
             ctx.fill();
+
         });
 
         if (progress < 1) {
+
             animationFrame = requestAnimationFrame(animate);
+
         } else {
-            writing = false;
+
             callback();
+
         }
+
     }
 
-    cancelAnimationFrame(animationFrame);
     animationFrame = requestAnimationFrame(animate);
 }
 
+
+/* =====================================
+   MOSTRAR LAS FRASES UNA POR UNA
+===================================== */
+
 function showNextMessage() {
+
     if (currentLine >= messages.length) {
+
         document.getElementById("status").textContent =
             "Hay algo más que quiero que escuches...";
 
-        document.getElementById("voiceArea").style.display = "block";
+        document.getElementById("voiceArea").style.display =
+            "block";
+
         return;
     }
 
@@ -412,156 +557,265 @@ function showNextMessage() {
         "Las estrellas están escribiendo para ti ✨";
 
     writeText(messages[currentLine], () => {
+
         currentLine++;
 
+        // Tiempo para leer cada frase.
         setTimeout(() => {
             showNextMessage();
-        }, 1500);
+        }, 2300);
+
     });
+
 }
 
-/* CONTROL DE LA MÚSICA */
+
+/* =====================================
+   CONTROL DE LOS AUDIOS
+===================================== */
 
 const music = document.getElementById("music");
 const voice = document.getElementById("voice");
 
-function fadeVolume(audio, target, duration, callback) {
-    const startVolume = audio.volume;
-    const difference = target - startVolume;
-    const steps = 20;
-    const delay = duration / steps;
-    let step = 0;
 
-    const timer = setInterval(() => {
-        step++;
-        audio.volume = Math.max(0, Math.min(1,
-            startVolume + difference * (step / steps)
-        ));
+// Desvanecer el volumen progresivamente.
+function fadeVolume(audio, target, duration) {
 
-        if (step >= steps) {
-            clearInterval(timer);
-            audio.volume = target;
+    return new Promise(resolve => {
 
-            if (callback) callback();
-        }
-    }, delay);
+        const startVolume = audio.volume;
+        const difference = target - startVolume;
+        const steps = 25;
+        const delay = duration / steps;
+
+        let step = 0;
+
+        const timer = setInterval(() => {
+
+            step++;
+
+            audio.volume = Math.max(
+                0,
+                Math.min(
+                    1,
+                    startVolume + difference * (step / steps)
+                )
+            );
+
+            if (step >= steps) {
+
+                clearInterval(timer);
+                audio.volume = target;
+                resolve();
+
+            }
+
+        }, delay);
+
+    });
+
 }
 
-document.getElementById("startButton").addEventListener("click", async () => {
+
+/* =====================================
+   COMENZAR LA EXPERIENCIA
+===================================== */
+
+document.getElementById("startButton")
+.addEventListener("click", async () => {
+
     document.getElementById("intro").style.display = "none";
-    document.getElementById("messageArea").style.display = "block";
+
+    document.getElementById("messageArea").style.display =
+        "block";
 
     music.volume = 0;
     music.currentTime = 0;
 
     try {
+
         await music.play();
-        fadeVolume(music, 0.65, 1800);
+
+        fadeVolume(music, .65, 2000);
+
     } catch (error) {
+
         document.getElementById("status").textContent =
-            "No se pudo iniciar la música. Comprueba que subiste el archivo MP3.";
+            "Comprueba que el archivo de música esté subido correctamente.";
+
     }
 
     setTimeout(() => {
         showNextMessage();
-    }, 1000);
+    }, 1200);
+
 });
 
-/* REPRODUCIR TU VOZ Y PAUSAR LA MÚSICA */
 
-document.getElementById("voiceButton").addEventListener("click", async () => {
-    const button = document.getElementById("voiceButton");
-    button.disabled = true;
-    button.textContent = "Escuchando tu mensaje ❤️";
+/* =====================================
+   ESCUCHAR TU VOZ
+===================================== */
 
-    fadeVolume(music, 0, 900, () => {
-        music.pause();
-    });
+const voiceButton = document.getElementById("voiceButton");
+
+voiceButton.addEventListener("click", async () => {
+
+    voiceButton.disabled = true;
+    voiceButton.textContent = "Preparando tu mensaje...";
+
+    // Primero se detiene suavemente la música.
+    await fadeVolume(music, 0, 900);
+
+    music.pause();
 
     voice.volume = 1;
     voice.currentTime = 0;
 
     try {
+
         await voice.play();
+
+        voiceButton.textContent = "Escuchando tu mensaje ❤️";
+
     } catch (error) {
-        button.disabled = false;
-        button.textContent = "❤️ Escuchar mi voz ❤️";
+
+        voiceButton.disabled = false;
+        voiceButton.textContent = "❤️ Escuchar mi voz ❤️";
+
         document.getElementById("status").textContent =
-            "No se pudo reproducir tu audio. Comprueba el nombre del archivo.";
-        return;
+            "No se pudo reproducir tu audio. Revisa el nombre del archivo.";
+
+        music.volume = 0;
+        music.play().then(() => {
+            fadeVolume(music, .65, 1500);
+        }).catch(() => {});
+
     }
+
 });
 
-/* CUANDO TERMINA TU GRABACIÓN */
 
-voice.addEventListener("ended", () => {
-    document.getElementById("voiceArea").style.display = "none";
-    document.getElementById("finalMessage").style.display = "block";
+/* =====================================
+   CUANDO TERMINA TU GRABACIÓN
+===================================== */
 
-    music.volume = 0;
-    music.play().then(() => {
-        fadeVolume(music, 0.65, 2500);
-    }).catch(() => {});
+voice.addEventListener("ended", async () => {
+
+    document.getElementById("voiceArea").style.display =
+        "none";
+
+    document.getElementById("finalMessage").style.display =
+        "block";
 
     document.getElementById("status").textContent =
         "Una última estrella para ti... ❤️";
 
+    // La canción vuelve suavemente.
+    music.volume = 0;
+
+    try {
+
+        await music.play();
+
+        fadeVolume(music, .65, 2500);
+
+    } catch (error) {}
+
     drawHeart();
+
 });
 
-/* CORAZÓN FORMADO POR ESTRELLAS */
+
+/* =====================================
+   CORAZÓN FORMADO POR ESTRELLAS
+===================================== */
 
 function drawHeart() {
-    const rect = canvas.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+
+    resizeMessageCanvas();
+
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
 
     particles = [];
 
     for (let t = 0; t < Math.PI * 2; t += .025) {
+
         const x = 16 * Math.pow(Math.sin(t), 3);
-        const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t)
-                    - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+        const y = -(
+            13 * Math.cos(t)
+            - 5 * Math.cos(2 * t)
+            - 2 * Math.cos(3 * t)
+            - Math.cos(4 * t)
+        );
 
         particles.push({
+
             x: Math.random() * width,
             y: Math.random() * height,
+
             tx: width / 2 + x * 6,
             ty: height / 2 + y * 6,
+
             size: Math.random() * 1.7 + 1,
-            phase: Math.random() * Math.PI * 2,
-            alpha: .8
+            phase: Math.random() * Math.PI * 2
+
         });
+
     }
 
     const start = performance.now();
 
     function animateHeart(time) {
-        const progress = Math.min((time - start) / 2500, 1);
+
+        const progress = Math.min(
+            (time - start) / 2500,
+            1
+        );
 
         ctx.clearRect(0, 0, width, height);
 
         particles.forEach(p => {
+
             const ease = 1 - Math.pow(1 - progress, 3);
+
             const x = p.x + (p.tx - p.x) * ease;
             const y = p.y + (p.ty - p.y) * ease;
-            const glow = .6 + Math.sin(time * .005 + p.phase) * .4;
+
+            const glow =
+                .65 + Math.sin(time * .005 + p.phase) * .35;
 
             ctx.beginPath();
-            ctx.arc(x, y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${glow})`;
-            ctx.shadowBlur = 12;
+
+            ctx.arc(
+                x,
+                y,
+                p.size,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                `rgba(255,255,255,${glow})`;
+
+            ctx.shadowBlur = 13;
             ctx.shadowColor = "white";
+
             ctx.fill();
+
         });
 
         requestAnimationFrame(animateHeart);
+
     }
 
     requestAnimationFrame(animateHeart);
+
 }
+
 </script>
 
 </body>
-  </html>
-  
+    </html>
+    
