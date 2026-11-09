@@ -1,1 +1,567 @@
-<html>holi</html>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un mensaje entre las estrellas ❤️</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(ellipse at bottom, #14213d 0%, #080d1b 55%, #02040b 100%);
+    color: white;
+    font-family: Georgia, serif;
+}
+
+#sky {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.moon {
+    position: fixed;
+    top: 8%;
+    right: 12%;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fff9df;
+    box-shadow: 0 0 20px #fff4c4, 0 0 55px #fff4c477;
+    z-index: 1;
+    opacity: .85;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 25px 17px;
+    text-align: center;
+}
+
+h1 {
+    color: #fff4d6;
+    font-size: clamp(27px, 7vw, 40px);
+    font-weight: normal;
+    text-shadow: 0 0 15px #fff, 0 0 35px #b9d8ff;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    color: #d9e5ff;
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 330px;
+}
+
+button {
+    border: 1px solid #e7d7a0;
+    border-radius: 30px;
+    padding: 13px 24px;
+    background: linear-gradient(135deg, #263b61, #111a30);
+    color: #fff5d9;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 0 18px #a9c8ff44;
+    transition: .3s;
+}
+
+button:active {
+    transform: scale(.96);
+}
+
+#startButton {
+    margin-top: 25px;
+}
+
+#messageCanvas {
+    width: 100%;
+    max-width: 650px;
+    height: 270px;
+    display: block;
+    overflow: visible;
+}
+
+#messageArea {
+    width: 100%;
+    display: none;
+}
+
+#status {
+    color: #dce8ff;
+    font-size: 14px;
+    letter-spacing: 1px;
+    min-height: 24px;
+    margin-top: 5px;
+}
+
+#voiceArea {
+    display: none;
+    margin-top: 20px;
+    animation: appear 2s ease;
+}
+
+#voiceArea p {
+    color: #fff1d2;
+    font-size: 20px;
+    text-shadow: 0 0 12px #fff;
+    line-height: 1.5;
+}
+
+#voiceButton {
+    background: linear-gradient(135deg, #754b73, #28385c);
+    border-color: #f2cde8;
+    box-shadow: 0 0 25px #e6b9ff55;
+    font-size: 17px;
+}
+
+#finalMessage {
+    display: none;
+    margin-top: 20px;
+    color: #fff2d9;
+    font-size: clamp(21px, 5vw, 28px);
+    line-height: 1.6;
+    text-shadow: 0 0 15px white, 0 0 30px #c8dfff;
+    animation: appear 2s ease;
+}
+
+.small {
+    color: #bdcce8;
+    font-size: 13px;
+    margin-top: 18px;
+}
+
+@keyframes appear {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-height: 650px) {
+    #messageCanvas {
+        height: 210px;
+    }
+    .container {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="sky"></canvas>
+<div class="moon"></div>
+
+<div class="container">
+
+    <section id="intro">
+        <h1>Un mensaje entre las estrellas</h1>
+        <p class="subtitle">
+            Antes de que termine tu día, quiero regalarte
+            algo más... ❤️
+        </p>
+        <button id="startButton">Mirar las estrellas ✨</button>
+        <p class="small">Una última sorpresa para ti, mi niña hermosa.</p>
+    </section>
+
+    <section id="messageArea">
+        <canvas id="messageCanvas"></canvas>
+        <div id="status">El cielo tiene algo que decirte...</div>
+
+        <div id="voiceArea">
+            <p>Hay algo más que quiero que escuches...</p>
+            <button id="voiceButton">❤️ Escuchar mi voz ❤️</button>
+            <p class="small">Un último regalo antes de que termine tu día.</p>
+        </div>
+
+        <div id="finalMessage">
+            Buenas noches, mi niña hermosa. ❤️<br>
+            Si pudiera elegir dónde estar esta noche,<br>
+            sería a tu lado.<br>
+            <span style="font-size:32px;">Te amo ✨</span>
+        </div>
+    </section>
+
+</div>
+
+<audio id="music" loop preload="auto">
+    <source src="Wuicho Kun - Nubecita (Letra_Lyrics)(MP3_160K).mp3" type="audio/mpeg">
+</audio>
+
+<audio id="voice" preload="auto">
+    <source src="Denoise_Mi último detalle.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ESTRELLAS DEL FONDO */
+
+const sky = document.getElementById("sky");
+const skyCtx = sky.getContext("2d");
+
+let backgroundStars = [];
+
+function resizeSky() {
+    sky.width = window.innerWidth * devicePixelRatio;
+    sky.height = window.innerHeight * devicePixelRatio;
+    skyCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+
+    backgroundStars = [];
+
+    for (let i = 0; i < 150; i++) {
+        backgroundStars.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            size: Math.random() * 1.7 + .3,
+            alpha: Math.random(),
+            speed: Math.random() * .02 + .005
+        });
+    }
+}
+
+resizeSky();
+window.addEventListener("resize", resizeSky);
+
+function drawSky() {
+    skyCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    backgroundStars.forEach(star => {
+        star.alpha += star.speed;
+
+        if (star.alpha > 1 || star.alpha < .15) {
+            star.speed *= -1;
+        }
+
+        skyCtx.beginPath();
+        skyCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        skyCtx.fillStyle = `rgba(255,255,255,${star.alpha})`;
+        skyCtx.shadowBlur = 8;
+        skyCtx.shadowColor = "white";
+        skyCtx.fill();
+    });
+
+    requestAnimationFrame(drawSky);
+}
+
+drawSky();
+
+/* ANIMACIÓN DE LETRAS FORMADAS POR ESTRELLAS */
+
+const canvas = document.getElementById("messageCanvas");
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+let animationFrame;
+let currentLine = 0;
+let writing = false;
+
+const messages = [
+    "De todas las estrellas del cielo,",
+    "mi destino siempre sería encontrarte a ti.",
+    "Si pudiera pedirles un deseo,",
+    "sería que nunca te faltaran motivos para sonreír.",
+    "Aunque nos separen kilómetros,",
+    "mi corazón siempre encuentra el camino hacia ti.",
+    "Hoy celebramos tu vida,",
+    "pero yo agradezco cada día que formes parte de la mía.",
+    "Y si esta noche miras al cielo,",
+    "recuerda que en algún lugar hay alguien",
+    "que piensa en ti, desea verte feliz",
+    "y te quiere con todo su corazón.",
+    "Feliz cumpleaños, mi niña hermosa ❤️"
+];
+
+function resizeMessageCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function createTargetPoints(text) {
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    const off = document.createElement("canvas");
+    off.width = Math.floor(width);
+    off.height = Math.floor(height);
+
+    const octx = off.getContext("2d");
+
+    let fontSize = Math.min(27, width / 12);
+
+    octx.textAlign = "center";
+    octx.textBaseline = "middle";
+
+    function setFont(size) {
+        octx.font = `bold ${size}px Georgia`;
+    }
+
+    setFont(fontSize);
+
+    while (octx.measureText(text).width > width - 24 && fontSize > 13) {
+        fontSize--;
+        setFont(fontSize);
+    }
+
+    octx.fillStyle = "white";
+    octx.fillText(text, width / 2, height / 2, width - 20);
+
+    const data = octx.getImageData(0, 0, off.width, off.height).data;
+    const targets = [];
+
+    for (let y = 0; y < off.height; y += 3) {
+        for (let x = 0; x < off.width; x += 3) {
+            const index = (y * off.width + x) * 4 + 3;
+
+            if (data[index] > 100) {
+                targets.push({
+                    x: x,
+                    y: y
+                });
+            }
+        }
+    }
+
+    return targets;
+}
+
+function writeText(text, callback) {
+    writing = true;
+    resizeMessageCanvas();
+
+    const targets = createTargetPoints(text);
+
+    particles = targets.map(target => ({
+        x: Math.random() * canvas.clientWidth,
+        y: Math.random() * canvas.clientHeight,
+        tx: target.x,
+        ty: target.y,
+        size: Math.random() * 1.2 + 1,
+        alpha: Math.random() * .5 + .5,
+        phase: Math.random() * Math.PI * 2
+    }));
+
+    let start = null;
+    const duration = 2400;
+
+    function animate(time) {
+        if (!start) start = time;
+
+        const progress = Math.min((time - start) / duration, 1);
+
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+        particles.forEach(p => {
+            const ease = 1 - Math.pow(1 - progress, 3);
+
+            const x = p.x + (p.tx - p.x) * ease;
+            const y = p.y + (p.ty - p.y) * ease;
+
+            const twinkle = .65 + Math.sin(time * .004 + p.phase) * .35;
+
+            ctx.beginPath();
+            ctx.arc(x, y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${twinkle * p.alpha})`;
+            ctx.shadowBlur = 8 + twinkle * 8;
+            ctx.shadowColor = "#ffffff";
+            ctx.fill();
+        });
+
+        if (progress < 1) {
+            animationFrame = requestAnimationFrame(animate);
+        } else {
+            writing = false;
+            callback();
+        }
+    }
+
+    cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(animate);
+}
+
+function showNextMessage() {
+    if (currentLine >= messages.length) {
+        document.getElementById("status").textContent =
+            "Hay algo más que quiero que escuches...";
+
+        document.getElementById("voiceArea").style.display = "block";
+        return;
+    }
+
+    document.getElementById("status").textContent =
+        "Las estrellas están escribiendo para ti ✨";
+
+    writeText(messages[currentLine], () => {
+        currentLine++;
+
+        setTimeout(() => {
+            showNextMessage();
+        }, 1500);
+    });
+}
+
+/* CONTROL DE LA MÚSICA */
+
+const music = document.getElementById("music");
+const voice = document.getElementById("voice");
+
+function fadeVolume(audio, target, duration, callback) {
+    const startVolume = audio.volume;
+    const difference = target - startVolume;
+    const steps = 20;
+    const delay = duration / steps;
+    let step = 0;
+
+    const timer = setInterval(() => {
+        step++;
+        audio.volume = Math.max(0, Math.min(1,
+            startVolume + difference * (step / steps)
+        ));
+
+        if (step >= steps) {
+            clearInterval(timer);
+            audio.volume = target;
+
+            if (callback) callback();
+        }
+    }, delay);
+}
+
+document.getElementById("startButton").addEventListener("click", async () => {
+    document.getElementById("intro").style.display = "none";
+    document.getElementById("messageArea").style.display = "block";
+
+    music.volume = 0;
+    music.currentTime = 0;
+
+    try {
+        await music.play();
+        fadeVolume(music, 0.65, 1800);
+    } catch (error) {
+        document.getElementById("status").textContent =
+            "No se pudo iniciar la música. Comprueba que subiste el archivo MP3.";
+    }
+
+    setTimeout(() => {
+        showNextMessage();
+    }, 1000);
+});
+
+/* REPRODUCIR TU VOZ Y PAUSAR LA MÚSICA */
+
+document.getElementById("voiceButton").addEventListener("click", async () => {
+    const button = document.getElementById("voiceButton");
+    button.disabled = true;
+    button.textContent = "Escuchando tu mensaje ❤️";
+
+    fadeVolume(music, 0, 900, () => {
+        music.pause();
+    });
+
+    voice.volume = 1;
+    voice.currentTime = 0;
+
+    try {
+        await voice.play();
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = "❤️ Escuchar mi voz ❤️";
+        document.getElementById("status").textContent =
+            "No se pudo reproducir tu audio. Comprueba el nombre del archivo.";
+        return;
+    }
+});
+
+/* CUANDO TERMINA TU GRABACIÓN */
+
+voice.addEventListener("ended", () => {
+    document.getElementById("voiceArea").style.display = "none";
+    document.getElementById("finalMessage").style.display = "block";
+
+    music.volume = 0;
+    music.play().then(() => {
+        fadeVolume(music, 0.65, 2500);
+    }).catch(() => {});
+
+    document.getElementById("status").textContent =
+        "Una última estrella para ti... ❤️";
+
+    drawHeart();
+});
+
+/* CORAZÓN FORMADO POR ESTRELLAS */
+
+function drawHeart() {
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    particles = [];
+
+    for (let t = 0; t < Math.PI * 2; t += .025) {
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t)
+                    - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+        particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            tx: width / 2 + x * 6,
+            ty: height / 2 + y * 6,
+            size: Math.random() * 1.7 + 1,
+            phase: Math.random() * Math.PI * 2,
+            alpha: .8
+        });
+    }
+
+    const start = performance.now();
+
+    function animateHeart(time) {
+        const progress = Math.min((time - start) / 2500, 1);
+
+        ctx.clearRect(0, 0, width, height);
+
+        particles.forEach(p => {
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const x = p.x + (p.tx - p.x) * ease;
+            const y = p.y + (p.ty - p.y) * ease;
+            const glow = .6 + Math.sin(time * .005 + p.phase) * .4;
+
+            ctx.beginPath();
+            ctx.arc(x, y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${glow})`;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "white";
+            ctx.fill();
+        });
+
+        requestAnimationFrame(animateHeart);
+    }
+
+    requestAnimationFrame(animateHeart);
+}
+</script>
+
+</body>
+  </html>
+  
